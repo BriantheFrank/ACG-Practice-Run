@@ -1,0 +1,41 @@
+:root {
+  color-scheme: light;
+  --bg: #f3efe6;
+  --surface: #fffaf0;
+  --surface-strong: #f8f1de;
+  --ink: #18232d;
+  --muted: #55616e;
+  --accent: #6e5b3e;
+  --accent-strong: #3f2f1e;
+  --danger: #8b2e2e;
+  --border: #d6c7ab;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Georgia, "Times New Roman", serif;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.72), transparent 30%),
+    linear-gradient(180deg, #ede4d2 0%, #f3efe6 38%, #ece2cf 100%);
+  color: var(--ink);
+}
+
+body {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
