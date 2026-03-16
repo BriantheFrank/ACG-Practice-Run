@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveMissionVersion } from "@/lib/supabase/server";
+import { isSupabaseConfigured, saveMissionVersion } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   let payload: {
@@ -17,6 +17,16 @@ export async function POST(request: NextRequest) {
 
   if (typeof payload.rawInput !== "string") {
     return NextResponse.json({ error: "rawInput is required." }, { status: 400 });
+  }
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json(
+      {
+        error:
+          "Supabase persistence is not configured. Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to enable draft saving."
+      },
+      { status: 503 }
+    );
   }
 
   try {

@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requestOpenAiJson } from "@/lib/ai/openai";
 import { buildFallbackMpg, buildPlanningGaps } from "@/lib/opord/templates";
 import { isAnalyzeRequest, isMissionPlanningGraph } from "@/lib/opord/schema";
-import { saveMissionVersion } from "@/lib/supabase/server";
+import { isSupabaseConfigured, saveMissionVersion } from "@/lib/supabase/server";
+
+const SUPABASE_WARNING =
+  "Mission analysis completed, but draft persistence is unavailable. Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to save versions.";
 
 function buildPrompt(rawInput: string, references: string, answers: string): string {
   return [
@@ -68,6 +71,13 @@ export async function POST(request: NextRequest) {
     };
   }
 
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({
+      mpg: graph,
+      warning: SUPABASE_WARNING
+    });
+  }
+
   try {
     const version = await saveMissionVersion({
       missionId: payload.missionId,
@@ -85,12 +95,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Mission version could not be saved.";
-    return NextResponse.json(
-      {
-        error: message,
-        mpg: graph
-      },
-      { status: 502 }
-    );
+    return NextResponse.json({
+      mpg: graph,
+      warning: `Mission analysis completed, but the version could not be saved. ${message}`
+    });
   }
 }

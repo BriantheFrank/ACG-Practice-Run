@@ -1,4 +1,30 @@
-import { MissionPlanningGraph, OpordJson, ValueField } from "./schema";
+import { MissionPlanningGraph, OpordJson, PaceEntry, ValueField } from "./schema";
+
+function createValueField<T extends string | string[]>(value: T, source: string, status: ValueField<T>["status"]): ValueField<T> {
+  return {
+    value,
+    source,
+    status
+  };
+}
+
+function createUnknownField(): ValueField {
+  return createValueField("", "", "unknown");
+}
+
+function createUnknownArrayField(): ValueField<string[]> {
+  return createValueField([], "", "unknown");
+}
+
+function createUnknownPaceEntry(): PaceEntry {
+  return {
+    primary: "",
+    alternate: "",
+    contingency: "",
+    emergency: "",
+    status: "unknown"
+  };
+}
 
 function fieldOrTbd(field: ValueField, token: string): string {
   if (field.value.trim()) {
@@ -95,13 +121,6 @@ export function buildFallbackMpg(rawInput: string, references = "", answers = ""
               ? "neo"
               : "other";
 
-  const buildField = (value: string, source: string, status: "confirmed" | "inferred" | "unknown"): ValueField => ({
-    value,
-    source,
-    status
-  });
-
-  const unknown = buildField("", "", "unknown");
   const missionStatement = rawInput.trim() ? rawInput.trim().split(/\r?\n/)[0].slice(0, 280) : "";
 
   const graph: MissionPlanningGraph = {
@@ -111,74 +130,74 @@ export function buildFallbackMpg(rawInput: string, references = "", answers = ""
       version: 1
     },
     mission: {
-      statement: missionStatement ? buildField(missionStatement, "rawInput", "inferred") : unknown,
-      who: unknown,
-      what: unknown,
-      where: unknown,
-      when: unknown,
-      why: unknown
+      statement: missionStatement ? createValueField(missionStatement, "rawInput", "inferred") : createUnknownField(),
+      who: createUnknownField(),
+      what: createUnknownField(),
+      where: createUnknownField(),
+      when: createUnknownField(),
+      why: createUnknownField()
     },
     situation: {
       enemy: {
         sit_temp: {
-          composition: unknown,
-          disposition: unknown,
-          strength: unknown,
-          capabilities: unknown,
-          most_likely_coa: unknown,
-          most_dangerous_coa: unknown
+          composition: createUnknownField(),
+          disposition: createUnknownField(),
+          strength: createUnknownField(),
+          capabilities: createUnknownField(),
+          most_likely_coa: createUnknownField(),
+          most_dangerous_coa: createUnknownField()
         }
       },
       environment: {
-        terrain: unknown,
-        weather: unknown,
-        civil: unknown
+        terrain: createUnknownField(),
+        weather: createUnknownField(),
+        civil: createUnknownField()
       },
       friendly: {
-        higher_intent: unknown,
-        task_org: unknown,
-        adjacent_units: unknown,
-        attachments: unknown
+        higher_intent: createUnknownField(),
+        task_org: createUnknownField(),
+        adjacent_units: createUnknownField(),
+        attachments: createUnknownField()
       },
       constraints: {
-        roe: unknown,
-        limitations: unknown
+        roe: createUnknownField(),
+        limitations: createUnknownField()
       }
     },
     execution: {
       intent: {
-        purpose: unknown,
-        method: unknown,
-        endstate: unknown
+        purpose: createUnknownField(),
+        method: createUnknownField(),
+        endstate: createUnknownField()
       },
       concept: {
-        phases: { value: [], source: "", status: "unknown" },
-        scheme_of_maneuver: unknown,
-        fires: unknown,
-        control_measures: unknown
+        phases: createUnknownArrayField(),
+        scheme_of_maneuver: createUnknownField(),
+        fires: createUnknownField(),
+        control_measures: createUnknownField()
       },
-      tasks_to_subordinates: { value: [], source: "", status: "unknown" },
-      coordinating_instructions: { value: [], source: "", status: "unknown" }
+      tasks_to_subordinates: createUnknownArrayField(),
+      coordinating_instructions: createUnknownArrayField()
     },
     sustainment: {
-      logistics: unknown,
+      logistics: createUnknownField(),
       medical: {
-        ccp: unknown,
-        casevac: unknown,
-        medevac: unknown
+        ccp: createUnknownField(),
+        casevac: createUnknownField(),
+        medevac: createUnknownField()
       }
     },
     command_signal: {
       command: {
-        c2_structure: unknown,
-        succession: unknown
+        c2_structure: createUnknownField(),
+        succession: createUnknownField()
       },
       signal: {
-        comms_overview: unknown,
+        comms_overview: createUnknownField(),
         pace: {
-          command_net: { primary: "", alternate: "", contingency: "", emergency: "", status: "unknown" },
-          fires_net: { primary: "", alternate: "", contingency: "", emergency: "", status: "unknown" },
-          medical_net: { primary: "", alternate: "", contingency: "", emergency: "", status: "unknown" }
+          command_net: createUnknownPaceEntry(),
+          fires_net: createUnknownPaceEntry(),
+          medical_net: createUnknownPaceEntry()
         },
         reporting_triggers: {
           value:

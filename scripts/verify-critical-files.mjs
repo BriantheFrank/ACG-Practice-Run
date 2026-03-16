@@ -19,7 +19,6 @@ const optionalFiles = [
   ".eslintrc.json",
   "next.config.mjs",
   "next.config.ts",
-  "scripts/sync-legacy-assets.mjs",
 ];
 
 const sourceRoots = ["app", "components", "lib", "scripts", "supabase"];

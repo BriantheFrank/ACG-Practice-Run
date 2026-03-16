@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check": "npm run verify:critical && npm run typecheck && npm run lint",
     "dev": "next dev",
     "prebuild": "npm run verify:critical",
     "build": "next build",

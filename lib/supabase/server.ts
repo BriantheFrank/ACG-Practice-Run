@@ -18,15 +18,21 @@ type VersionNumberRow = {
   version_number: number;
 };
 
-function getSupabaseConfig() {
-  const url = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export function isSupabaseConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
 
-  if (!url || !serviceRoleKey) {
-    throw new Error("Supabase server environment variables are not configured.");
+function getSupabaseConfig() {
+  if (!isSupabaseConfigured()) {
+    throw new Error(
+      "Supabase persistence is not configured. Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to enable draft and version saving."
+    );
   }
 
-  return { url, serviceRoleKey };
+  return {
+    url: process.env.SUPABASE_URL as string,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY as string
+  };
 }
 
 async function supabaseRequest<T>(path: string, init: RequestInit): Promise<T> {
@@ -68,7 +74,7 @@ export async function saveMissionVersion(input: SaveMissionVersionInput): Promis
   });
 
   const previousVersionRows = await supabaseRequest<VersionNumberRow[]>(
-    `mission_versions?mission_id=eq.${missionRows[0]?.id || missionId}&select=version_number&order=version_number.desc&limit=1`,
+    `mission_versions?mission_id=eq.${encodeURIComponent(missionRows[0]?.id || missionId)}&select=version_number&order=version_number.desc&limit=1`,
     {
       method: "GET"
     }

@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requestOpenAiJson } from "@/lib/ai/openai";
 import { buildOpordFromMpg } from "@/lib/opord/templates";
 import { isMissionPlanningGraph, isOpordJson, isOpordRequest } from "@/lib/opord/schema";
-import { saveMissionVersion } from "@/lib/supabase/server";
+import { isSupabaseConfigured, saveMissionVersion } from "@/lib/supabase/server";
+
+const SUPABASE_WARNING =
+  "OPORD generation completed, but draft persistence is unavailable. Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to save versions.";
 
 function buildPrompt(graphJson: string): string {
   return [
@@ -46,6 +49,13 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({
+      opord,
+      warning: SUPABASE_WARNING
+    });
+  }
+
   try {
     const version = await saveMissionVersion({
       missionId: payload.missionId,
@@ -62,12 +72,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Mission version could not be saved.";
-    return NextResponse.json(
-      {
-        error: message,
-        opord
-      },
-      { status: 502 }
-    );
+    return NextResponse.json({
+      opord,
+      warning: `OPORD generation completed, but the version could not be saved. ${message}`
+    });
   }
 }

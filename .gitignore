@@ -6,3 +6,7 @@ node_modules
 .env
 .env.local
 .env.production
+.tmp-*/
+tmp-*.html
+tmp-*.log
+tmp-*.ps1

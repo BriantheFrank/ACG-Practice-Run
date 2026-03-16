@@ -12,11 +12,13 @@ type SaveState = {
 type AnalyzeResponse = SaveState & {
   mpg: MissionPlanningGraph;
   error?: string;
+  warning?: string;
 };
 
 type OpordResponse = SaveState & {
   opord: OpordJson;
   error?: string;
+  warning?: string;
 };
 
 const panelStyle: CSSProperties = {
@@ -82,6 +84,7 @@ export function OpordWorkbench() {
   const [mpg, setMpg] = useState<MissionPlanningGraph | null>(null);
   const [opord, setOpord] = useState<OpordJson | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [isWorking, setIsWorking] = useState(false);
 
   async function runTask(task: () => Promise<void>) {
@@ -99,6 +102,7 @@ export function OpordWorkbench() {
 
   async function handleSaveDraft() {
     setError(null);
+    setWarning(null);
 
     const response = await fetch("/api/missions", {
       method: "POST",
@@ -135,6 +139,7 @@ export function OpordWorkbench() {
     }
 
     setError(null);
+    setWarning(null);
 
     const response = await fetch("/api/analyze", {
       method: "POST",
@@ -156,6 +161,7 @@ export function OpordWorkbench() {
 
     setMpg(data.mpg);
     setOpord(null);
+    setWarning(data.warning || null);
 
     if (data.missionId && data.versionId && typeof data.versionNumber === "number") {
       setMissionId(data.missionId);
@@ -178,6 +184,7 @@ export function OpordWorkbench() {
     }
 
     setError(null);
+    setWarning(null);
 
     const response = await fetch("/api/opord", {
       method: "POST",
@@ -196,6 +203,7 @@ export function OpordWorkbench() {
     }
 
     setOpord(data.opord);
+    setWarning(data.warning || null);
 
     if (data.missionId && data.versionId && typeof data.versionNumber === "number") {
       setMissionId(data.missionId);
@@ -307,8 +315,13 @@ export function OpordWorkbench() {
             </button>
           </div>
 
-          <div style={{ marginTop: "1rem", minHeight: "1.5rem", color: error ? "var(--danger)" : "var(--muted)" }}>
-            {isWorking ? "Working..." : error ? error : "Ready."}
+          <div style={{ marginTop: "1rem", minHeight: warning ? "3.5rem" : "1.5rem" }}>
+            <div style={{ color: error ? "var(--danger)" : "var(--muted)" }}>
+              {isWorking ? "Working..." : error ? error : "Ready."}
+            </div>
+            {!isWorking && warning ? (
+              <div style={{ marginTop: "0.35rem", color: "var(--accent)", fontSize: "0.95rem" }}>{warning}</div>
+            ) : null}
           </div>
           <div style={{ marginTop: "0.5rem", color: "var(--muted)", fontSize: "0.95rem" }}>
             {saveState
